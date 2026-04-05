@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+  <script>
+    const STORAGE_KEY = 'diary_private_writing_data';
+
+    const toLocalISO = (d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    function resolveDate(dateStr) {
+      const now = new Date();
+      if (!dateStr || dateStr.toLowerCase() === 'today') return toLocalISO(now);
+      const lower = dateStr.toLowerCase();
+      if (lower === 'yesterday') {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return toLocalISO(d);
+      }
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) return toLocalISO(parsed);
+      return toLocalISO(now);
+    }
+
+    function getData() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveData(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    window['ai_edge_gallery_get_result'] = async (dataStr) => {
+      try {
+        const input = JSON.parse(dataStr);
+        const action = input.action;
+        const allData = getData();
+        let resultMessage = "";
+        let showDashboard = false;
+        let dashboardDays = 30;
+
+        if (action === 'write_entry') {
+          const date = resolveDate(input.date);
+          const title = input.title || `Entry for ${date}`;
+          const content = input.content;
+          if (!content) throw new Error("No content provided for the diary entry.");
+          const tags = input.tags || [];
+          const existing = allData[date];
+          allData[date] = {
+            title: title,
+            content: content,
+            tags: tags,
+            updatedAt: new Date().toISOString(),
+            createdAt: existing ? existing.createdAt : new Date().toISOString()
+          };
+          saveData(allData);
+          resultMessage = `Saved your diary entry for ${date}: "${title}".`;
+
+        } else if (action === 'read_entry') {
+          const date = resolveDate(input.date);
+          const entry = allData[date];
+          if (entry) {
+            resultMessage = `--- ${entry.title} (${date}) ---\n\n${entry.content}`;
+            if (entry.tags && entry.tags.length > 0) {
+              resultMessage += `\n\nTags: ${entry.tags.join(', ')}`;
+            }
+          } else {
+            resultMessage = `No diary entry found for ${date}. Would you like to write one?`;
+          }
+
+        } else if (action === 'list_entries') {
+          const count = parseInt(input.count) || 10;
+          const sortedDates = Object.keys(allData).sort().reverse().slice(0, count);
+          if (sortedDates.length === 0) {
+            resultMessage = "Your diary is empty. Start writing to capture your thoughts!";
+          } else {
+            resultMessage = `Here are your ${sortedDates.length} most recent entries:\n\n`;
+            sortedDates.forEach(d => {
+              const entry = allData[d];
+              const preview = entry.content.substring(0, 80) + (entry.content.length > 80 ? '...' : '');
+              resultMessage += `- **${d}** — ${entry.title}\n  "${preview}"\n\n`;
+            });
+          }
+
+        } else if (action === 'search_entries') {
+          const query = (input.query || '').toLowerCase();
+          const count = parseInt(input.count) || 10;
+          if (!query) throw new Error("No search query provided.");
+          const results = [];
+          const sortedDates = Object.keys(allData).sort().reverse();
+          for (const d of sortedDates) {
+            const entry = allData[d];
+            const matchesContent = entry.content.toLowerCase().includes(query);
+            const matchesTitle = entry.title.toLowerCase().includes(query);
+            const matchesTags = entry.tags && entry.tags.some(t => t.toLowerCase().includes(query));
+            if (matchesContent || matchesTitle || matchesTags) {
+              results.push({ date: d, ...entry });
+              if (results.length >= count) break;
+            }
+          }
+          if (results.length === 0) {
+            resultMessage = `No entries found matching "${query}".`;
+          } else {
+            resultMessage = `Found ${results.length} entr${results.length === 1 ? 'y' : 'ies'} matching "${query}":\n\n`;
+            results.forEach(r => {
+              const preview = r.content.substring(0, 100) + (r.content.length > 100 ? '...' : '');
+              resultMessage += `- **${r.date}** — ${r.title}\n  "${preview}"\n\n`;
+            });
+          }
+
+        } else if (action === 'show_dashboard') {
+          showDashboard = true;
+          dashboardDays = parseInt(input.days) || 30;
+          const sortedDates = Object.keys(allData).sort().reverse().slice(0, dashboardDays);
+          if (sortedDates.length === 0) {
+            resultMessage = "Your diary is empty. Start writing to capture your thoughts!";
+          } else {
+            resultMessage = `Here are your ${sortedDates.length} most recent entries:`;
+          }
+
+        } else if (action === 'delete_entry') {
+          const date = resolveDate(input.date);
+          if (allData[date]) {
+            const title = allData[date].title;
+            delete allData[date];
+            saveData(allData);
+            resultMessage = `Deleted diary entry "${title}" for ${date}.`;
+          } else {
+            resultMessage = `No diary entry found to delete for ${date}.`;
+          }
+
+        } else if (action === 'export_data') {
+          resultMessage = `Here is your raw diary data for backup (copy and save this JSON):\n\n${JSON.stringify(allData, null, 2)}`;
+
+        } else if (action === 'wipe_data') {
+          localStorage.removeItem(STORAGE_KEY);
+          resultMessage = "All your diary entries have been deleted. Your journal is now empty.";
+
+        } else {
+          throw new Error(`Unknown action: ${action}`);
+        }
+
+        const response = { result: resultMessage };
+
+        if (showDashboard) {
+          response.webview = { url: `dashboard.html?days=${dashboardDays}`, aspectRatio: 1.5 };
+        }
+
+        return JSON.stringify(response);
+
+      } catch (e) {
+        console.error(e);
+        return JSON.stringify({ error: `Diary error: ${e.message}` });
+      }
+    };
+  </script>
+</body>
+</html>
