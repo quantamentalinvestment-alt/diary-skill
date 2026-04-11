@@ -24,15 +24,24 @@ When a user wants to write or save a diary entry, call the `run_js` tool with:
     - If user gives a specific date, format as **YYYY-MM-DD**.
     - If no date is mentioned, default to "today".
   - `tags`: Array of strings. (Optional — extract relevant tags like "work", "travel", "gratitude" from context)
+  - `photos`: Array of strings. **IMPORTANT for images**: When the user shares an image with their message, you MUST include the image data in this array. Extract the base64 data URI from the image (format: `"data:image/jpeg;base64,..."` or `"data:image/png;base64,..."`). If the user mentions a photo or image but you cannot access the image data, ask the user to share the image directly in the chat. If no image is shared, pass an empty array `[]`.
 
-#### 2. Read a Specific Entry
+#### 2. Attach Photo to Entry
+When a user wants to add a photo to an existing entry, call the `run_js` tool with:
+- **script name**: `index.html`
+- **data**: A JSON string with:
+  - `action`: "attach_photo"
+  - `date`: String (YYYY-MM-DD or "today"/"yesterday")
+  - `photo`: String. Base64-encoded image data with data URI prefix (e.g., `"data:image/jpeg;base64,..."`)
+
+#### 3. Read a Specific Entry
 When a user asks to read a specific entry by date or title, call the `run_js` tool with:
 - **script name**: `index.html`
 - **data**: A JSON string with:
   - `action`: "read_entry"
   - `date`: String (YYYY-MM-DD or "today"/"yesterday")
 
-#### 3. List Recent Entries
+#### 4. List Recent Entries
 When a user wants to see their recent entries, call the `run_js` tool with:
 - **script name**: `index.html`
 - **data**: A JSON string with:
@@ -97,9 +106,15 @@ When a user wants to delete their entire diary, call the `run_js` tool with:
   - "Export my diary as backup."
   - "Clear my entire diary."
 
+- **Photos:**
+  - "Add this photo to my diary entry for today." (user provides an image)
+  - "Attach this image to yesterday's entry." (user provides an image)
+  - "Save this photo with my journal entry." (user provides an image)
+
 ### Rules
-- **Privacy**: All data is stored locally on your device. Never share diary content externally.
+- **Privacy**: All data (including photos) is stored locally on your device. Never share diary content externally.
 - **No Entry**: If no entry exists for a requested date, inform the user and offer to write one.
 - **Updates**: Writing an entry for a date that already has one will update/append to that entry.
+- **Photos**: Photos are stored as base64 data. Multiple photos can be attached to a single entry.
 - **Dashboard**: Only shown when explicitly requested via `show_dashboard` action.
 - **Tone**: When reading entries back, be respectful and neutral. Do not editorialize or judge the user's writings.

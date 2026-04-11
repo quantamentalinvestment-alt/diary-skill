@@ -21,11 +21,7 @@
       --font-sans: 'Inter', -apple-system, sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg-gradient);
@@ -73,7 +69,6 @@
       font-weight: 300;
     }
 
-    /* Search Bar */
     .search-bar {
       display: flex;
       align-items: center;
@@ -88,9 +83,7 @@
       transition: border-color 0.3s;
     }
 
-    .search-bar:focus-within {
-      border-color: var(--accent-primary);
-    }
+    .search-bar:focus-within { border-color: var(--accent-primary); }
 
     .search-bar svg {
       width: 18px;
@@ -111,11 +104,8 @@
       font-weight: 300;
     }
 
-    .search-bar input::placeholder {
-      color: var(--text-muted);
-    }
+    .search-bar input::placeholder { color: var(--text-muted); }
 
-    /* Stats Row */
     .stats-row {
       display: flex;
       gap: 12px;
@@ -126,6 +116,7 @@
       flex: 1;
       background: var(--glass-bg);
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       border: 1px solid var(--glass-border);
       border-radius: 14px;
       padding: 14px;
@@ -148,7 +139,30 @@
       margin-top: 4px;
     }
 
-    /* Tag Filter */
+    .month-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .month-pill {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .month-pill:hover, .month-pill.active {
+      background: rgba(201, 168, 124, 0.15);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
     .tag-filter {
       display: flex;
       flex-wrap: wrap;
@@ -173,7 +187,6 @@
       color: var(--accent-primary);
     }
 
-    /* Entry List */
     .entry-list {
       display: flex;
       flex-direction: column;
@@ -230,18 +243,9 @@
       opacity: 0;
     }
 
-    .entry-card:hover .entry-delete {
-      opacity: 1;
-    }
-
-    .entry-delete:hover {
-      color: #ff6b6b;
-    }
-
-    .entry-delete svg {
-      width: 16px;
-      height: 16px;
-    }
+    .entry-card:hover .entry-delete { opacity: 1; }
+    .entry-delete:hover { color: #ff6b6b; }
+    .entry-delete svg { width: 16px; height: 16px; }
 
     .entry-title {
       font-family: var(--font-serif);
@@ -278,7 +282,72 @@
       border-radius: 8px;
     }
 
-    /* Expanded Entry */
+    .entry-photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .entry-photo {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .entry-photo:hover {
+      transform: scale(1.05);
+    }
+
+    .entry-card.expanded .entry-photo {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: contain;
+    }
+
+    .entry-photo-count {
+      font-size: 0.68rem;
+      color: var(--accent-secondary);
+      background: rgba(166, 124, 82, 0.1);
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .entry-card.expanded .entry-photo-count {
+      display: none;
+    }
+
+    .add-photo-btn {
+      display: none;
+      background: rgba(201, 168, 124, 0.15);
+      border: 1px dashed var(--accent-primary);
+      color: var(--accent-primary);
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: var(--font-sans);
+      margin-top: 12px;
+      transition: all 0.2s;
+      width: 100%;
+      text-align: center;
+    }
+
+    .add-photo-btn:hover {
+      background: rgba(201, 168, 124, 0.25);
+    }
+
+    .entry-card.expanded .add-photo-btn {
+      display: block;
+    }
+
     .entry-card.expanded .entry-preview {
       -webkit-line-clamp: unset;
       color: var(--text-main);
@@ -287,15 +356,9 @@
       line-height: 1.7;
     }
 
-    .entry-card.expanded {
-      cursor: default;
-    }
+    .entry-card.expanded { cursor: default; }
+    .entry-card.expanded .entry-delete { opacity: 1; }
 
-    .entry-card.expanded .entry-delete {
-      opacity: 1;
-    }
-
-    /* Empty State */
     .empty-state {
       text-align: center;
       padding: 48px 20px;
@@ -314,7 +377,6 @@
       font-weight: 300;
     }
 
-    /* Raw Data Toggle */
     .raw-data-section {
       margin-top: 32px;
       text-align: center;
@@ -372,17 +434,9 @@
       font-family: var(--font-sans);
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 5px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--glass-border);
-      border-radius: 10px;
-    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -392,35 +446,30 @@
       <div class="subtitle">Your private thoughts, safely stored</div>
     </header>
 
-    <!-- Search -->
     <div class="search-bar">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
       <input type="text" id="search-input" placeholder="Search your entries...">
     </div>
 
-    <!-- Stats -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-value" id="total-entries">0</div>
         <div class="stat-label">Total Entries</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value" id="total-words">0</div>
-        <div class="stat-label">Words Written</div>
-      </div>
-      <div class="stat-card">
         <div class="stat-value" id="total-tags">0</div>
         <div class="stat-label">Tags</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-value" id="streak">0</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
     </div>
 
-    <!-- Tag Filter -->
+    <div class="month-filter" id="month-filter"></div>
     <div class="tag-filter" id="tag-filter"></div>
-
-    <!-- Entry List -->
     <div class="entry-list" id="entry-list"></div>
 
-    <!-- Raw Data -->
     <div class="raw-data-section">
       <button class="raw-data-toggle" id="raw-data-toggle">View Raw Data</button>
       <div class="raw-data-container" id="raw-data-container">
@@ -430,41 +479,144 @@
     </div>
   </div>
 
+  <!-- Photo Modal -->
+  <div id="photo-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;justify-content:center;align-items:center;cursor:pointer;" onclick="closePhotoModal()">
+    <img id="modal-img" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:8px;">
+  </div>
+
+  <!-- Hidden File Input for Photo Picker -->
+  <input type="file" id="photo-input" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)">
+
   <script>
-    const STORAGE_KEY = 'diary_private_writing_data';
+    const DB_NAME = 'diary_private_writing_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'entries';
+
     let allEntries = {};
     let activeTag = null;
+    let activeMonth = null;
     let searchQuery = '';
     let expandedDate = null;
 
     const urlParams = new URLSearchParams(window.location.search);
     const daysToShow = parseInt(urlParams.get('days')) || 30;
 
-    function loadData() {
-      allEntries = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'date' });
+          }
+        };
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+      });
+    }
+
+    async function loadAllEntries() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => {
+          const entries = {};
+          request.result.forEach(entry => { entries[entry.date] = entry; });
+          resolve(entries);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function deleteEntryDB(date) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.delete(date);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function loadData() {
+      allEntries = await loadAllEntries();
       renderAll();
     }
 
     function renderAll() {
       renderStats();
+      renderMonthFilter();
       renderTags();
       renderEntries();
       document.getElementById('raw-json').textContent = JSON.stringify(allEntries, null, 2);
     }
 
     function renderStats() {
-      const entries = Object.values(allEntries);
-      document.getElementById('total-entries').textContent = entries.length;
+      try {
+        const entries = Object.values(allEntries);
+        document.getElementById('total-entries').textContent = entries.length;
+        const allTags = new Set();
+        entries.forEach(e => {
+          if (e.tags) e.tags.forEach(t => allTags.add(t));
+        });
+        document.getElementById('total-tags').textContent = allTags.size;
+        document.getElementById('streak').textContent = calcStreak();
+      } catch (e) {
+        console.error('renderStats error:', e);
+      }
+    }
 
-      let totalWords = 0;
-      const allTags = new Set();
-      entries.forEach(e => {
-        totalWords += e.content.split(/\s+/).filter(w => w.length > 0).length;
-        if (e.tags) e.tags.forEach(t => allTags.add(t));
+    function calcStreak() {
+      try {
+        const dates = Object.keys(allEntries).sort().reverse();
+        if (dates.length === 0) return 0;
+        let streak = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let checkDate = new Date(today);
+        for (let i = 0; i < dates.length + 1; i++) {
+          const iso = checkDate.toISOString().split('T')[0];
+          if (dates.includes(iso)) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+        return streak;
+      } catch (e) {
+        console.error('calcStreak error:', e);
+        return 0;
+      }
+    }
+
+    function renderMonthFilter() {
+      const months = new Set();
+      Object.keys(allEntries).forEach(date => {
+        months.add(date.substring(0, 7));
       });
+      const container = document.getElementById('month-filter');
+      const sortedMonths = Array.from(months).sort().reverse();
+      if (sortedMonths.length <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+      let html = `<div class="month-pill ${!activeMonth ? 'active' : ''}" onclick="filterMonth(null)">All</div>`;
+      sortedMonths.forEach(m => {
+        const [year, month] = m.split('-');
+        const label = new Date(year, parseInt(month) - 1).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        html += `<div class="month-pill ${activeMonth === m ? 'active' : ''}" onclick="filterMonth('${m}')">${label}</div>`;
+      });
+      container.innerHTML = html;
+    }
 
-      document.getElementById('total-words').textContent = totalWords.toLocaleString();
-      document.getElementById('total-tags').textContent = allTags.size;
+    function filterMonth(month) {
+      activeMonth = month;
+      renderMonthFilter();
+      renderEntries();
     }
 
     function renderTags() {
@@ -472,15 +624,12 @@
       Object.values(allEntries).forEach(e => {
         if (e.tags) e.tags.forEach(t => allTags.add(t));
       });
-
       const container = document.getElementById('tag-filter');
       const sortedTags = Array.from(allTags).sort();
-
       if (sortedTags.length === 0) {
         container.innerHTML = '';
         return;
       }
-
       let html = `<div class="tag-pill ${!activeTag ? 'active' : ''}" onclick="filterTag(null)">All</div>`;
       sortedTags.forEach(tag => {
         html += `<div class="tag-pill ${activeTag === tag ? 'active' : ''}" onclick="filterTag('${tag}')">${tag}</div>`;
@@ -497,8 +646,11 @@
     function getFilteredEntries() {
       let entries = Object.entries(allEntries)
         .map(([date, entry]) => ({ date, ...entry }))
-        .sort((a, b) => b.date.localeCompare(a.date))
-        .slice(0, daysToShow);
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      if (activeMonth) {
+        entries = entries.filter(e => e.date.startsWith(activeMonth));
+      }
 
       if (activeTag) {
         entries = entries.filter(e => e.tags && e.tags.includes(activeTag));
@@ -513,7 +665,7 @@
         );
       }
 
-      return entries;
+      return entries.slice(0, daysToShow);
     }
 
     function renderEntries() {
@@ -539,6 +691,20 @@
           ? `<div class="entry-tags">${entry.tags.map(t => `<span class="entry-tag">${t}</span>`).join('')}</div>`
           : '';
 
+        const photosHtml = entry.photos && entry.photos.length > 0
+          ? `<div class="entry-photos">${entry.photos.map((p, idx) => `<img src="${p}" class="entry-photo" onclick="event.stopPropagation(); openPhoto('${entry.date}', ${idx})" alt="Photo ${idx + 1}">`).join('')}</div>`
+          : '';
+
+        const photoCountHtml = entry.photos && entry.photos.length > 0 && !isExpanded
+          ? `<span class="entry-photo-count">📷 ${entry.photos.length}</span>`
+          : '';
+
+        const addPhotoBtnHtml = `
+          <button class="add-photo-btn" onclick="event.stopPropagation(); triggerPhotoPicker('${entry.date}')">
+            + Add Photo from Library
+          </button>
+        `;
+
         const deleteHtml = `
           <button class="entry-delete" onclick="event.stopPropagation(); deleteEntry('${entry.date}')" title="Delete entry">
             <svg fill="currentColor" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
@@ -548,12 +714,14 @@
         return `
           <div class="entry-card ${isExpanded ? 'expanded' : ''}" onclick="toggleEntry('${entry.date}')" style="animation-delay: ${i * 0.05}s">
             <div class="entry-header">
-              <span class="entry-date">${dateDisplay}</span>
+              <span class="entry-date">${dateDisplay} ${photoCountHtml}</span>
               ${deleteHtml}
             </div>
             <div class="entry-title">${escapeHtml(entry.title)}</div>
             <div class="entry-preview">${escapeHtml(entry.content)}</div>
             ${tagsHtml}
+            ${photosHtml}
+            ${addPhotoBtnHtml}
           </div>
         `;
       }).join('');
@@ -564,10 +732,10 @@
       renderEntries();
     }
 
-    function deleteEntry(date) {
+    async function deleteEntry(date) {
       if (confirm(`Delete entry from ${date}?`)) {
+        await deleteEntryDB(date);
         delete allEntries[date];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(allEntries));
         if (expandedDate === date) expandedDate = null;
         renderAll();
       }
@@ -579,7 +747,67 @@
       return div.innerHTML;
     }
 
-    // Search
+    function openPhoto(date, photoIndex) {
+      const entry = allEntries[date];
+      if (!entry || !entry.photos || !entry.photos[photoIndex]) return;
+      const photo = entry.photos[photoIndex];
+      const modal = document.getElementById('photo-modal');
+      const modalImg = document.getElementById('modal-img');
+      modalImg.src = photo;
+      modal.style.display = 'flex';
+    }
+
+    function closePhotoModal() {
+      document.getElementById('photo-modal').style.display = 'none';
+    }
+
+    let pendingPhotoDate = null;
+
+    function triggerPhotoPicker(date) {
+      pendingPhotoDate = date;
+      document.getElementById('photo-input').click();
+    }
+
+    async function handlePhotoSelect(event) {
+      const file = event.target.files[0];
+      const date = pendingPhotoDate;
+      event.target.value = '';
+      pendingPhotoDate = null;
+      
+      if (!file || !date) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64Photo = e.target.result;
+          const entry = allEntries[date];
+          if (!entry) {
+            alert('Entry not found. Please create the diary entry first.');
+            return;
+          }
+          if (!entry.photos) entry.photos = [];
+          entry.photos.push(base64Photo);
+          entry.updatedAt = new Date().toISOString();
+
+          const db = await openDB();
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const request = store.put(entry);
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+          });
+
+          allEntries[date] = entry;
+          renderAll();
+        } catch (err) {
+          console.error('Failed to save photo:', err);
+          alert('Failed to save photo. Please try again.');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
     let searchTimeout;
     document.getElementById('search-input').addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -589,7 +817,6 @@
       }, 300);
     });
 
-    // Raw data toggle
     document.getElementById('raw-data-toggle').addEventListener('click', () => {
       const container = document.getElementById('raw-data-container');
       const isHidden = container.style.display === 'none';
@@ -597,7 +824,6 @@
       document.getElementById('raw-data-toggle').textContent = isHidden ? 'Hide Raw Data' : 'View Raw Data';
     });
 
-    // Copy raw data
     document.getElementById('copy-btn').addEventListener('click', () => {
       const rawJson = document.getElementById('raw-json').textContent;
       navigator.clipboard.writeText(rawJson).then(() => {

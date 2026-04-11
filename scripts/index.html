@@ -2,7 +2,9 @@
 <html lang="en">
 <body>
   <script>
-    const STORAGE_KEY = 'diary_private_writing_data';
+    const DB_NAME = 'diary_private_writing_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'entries';
 
     const toLocalISO = (d) => {
       const year = d.getFullYear();
@@ -26,20 +28,77 @@
       return toLocalISO(now);
     }
 
-    function getData() {
-      const data = localStorage.getItem(STORAGE_KEY);
-      return data ? JSON.parse(data) : {};
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'date' });
+          }
+        };
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+      });
     }
 
-    function saveData(data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    async function getAllEntries() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => {
+          const entries = {};
+          request.result.forEach(entry => { entries[entry.date] = entry; });
+          resolve(entries);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function putEntry(entry) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.put(entry);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function deleteEntryDB(date) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.delete(date);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function clearAllEntries() {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.clear();
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function exportAllEntries() {
+      const entries = await getAllEntries();
+      return JSON.stringify(entries, null, 2);
     }
 
     window['ai_edge_gallery_get_result'] = async (dataStr) => {
       try {
         const input = JSON.parse(dataStr);
         const action = input.action;
-        const allData = getData();
         let resultMessage = "";
         let showDashboard = false;
         let dashboardDays = 30;
@@ -50,24 +109,50 @@
           const content = input.content;
           if (!content) throw new Error("No content provided for the diary entry.");
           const tags = input.tags || [];
+          const photos = input.photos || [];
+          const allData = await getAllEntries();
           const existing = allData[date];
-          allData[date] = {
+          await putEntry({
+            date: date,
             title: title,
             content: content,
             tags: tags,
+            photos: photos,
             updatedAt: new Date().toISOString(),
             createdAt: existing ? existing.createdAt : new Date().toISOString()
-          };
-          saveData(allData);
+          });
           resultMessage = `Saved your diary entry for ${date}: "${title}".`;
+          if (photos.length > 0) {
+            resultMessage += ` (${photos.length} photo${photos.length > 1 ? 's' : ''} attached)`;
+          }
+
+        } else if (action === 'attach_photo') {
+          const date = resolveDate(input.date);
+          const photo = input.photo;
+          if (!photo) throw new Error("No photo data provided.");
+          const allData = await getAllEntries();
+          const entry = allData[date];
+          if (!entry) {
+            resultMessage = `No diary entry found for ${date}. Create an entry first before attaching photos.`;
+          } else {
+            if (!entry.photos) entry.photos = [];
+            entry.photos.push(photo);
+            entry.updatedAt = new Date().toISOString();
+            await putEntry(entry);
+            resultMessage = `Photo attached to entry for ${date}. (${entry.photos.length} photo${entry.photos.length > 1 ? 's' : ''} total)`;
+          }
 
         } else if (action === 'read_entry') {
           const date = resolveDate(input.date);
+          const allData = await getAllEntries();
           const entry = allData[date];
           if (entry) {
             resultMessage = `--- ${entry.title} (${date}) ---\n\n${entry.content}`;
             if (entry.tags && entry.tags.length > 0) {
               resultMessage += `\n\nTags: ${entry.tags.join(', ')}`;
+            }
+            if (entry.photos && entry.photos.length > 0) {
+              resultMessage += `\n\n[${entry.photos.length} photo${entry.photos.length > 1 ? 's' : ''} attached]`;
             }
           } else {
             resultMessage = `No diary entry found for ${date}. Would you like to write one?`;
@@ -75,6 +160,7 @@
 
         } else if (action === 'list_entries') {
           const count = parseInt(input.count) || 10;
+          const allData = await getAllEntries();
           const sortedDates = Object.keys(allData).sort().reverse().slice(0, count);
           if (sortedDates.length === 0) {
             resultMessage = "Your diary is empty. Start writing to capture your thoughts!";
@@ -91,6 +177,7 @@
           const query = (input.query || '').toLowerCase();
           const count = parseInt(input.count) || 10;
           if (!query) throw new Error("No search query provided.");
+          const allData = await getAllEntries();
           const results = [];
           const sortedDates = Object.keys(allData).sort().reverse();
           for (const d of sortedDates) {
@@ -116,6 +203,7 @@
         } else if (action === 'show_dashboard') {
           showDashboard = true;
           dashboardDays = parseInt(input.days) || 30;
+          const allData = await getAllEntries();
           const sortedDates = Object.keys(allData).sort().reverse().slice(0, dashboardDays);
           if (sortedDates.length === 0) {
             resultMessage = "Your diary is empty. Start writing to capture your thoughts!";
@@ -125,20 +213,21 @@
 
         } else if (action === 'delete_entry') {
           const date = resolveDate(input.date);
+          const allData = await getAllEntries();
           if (allData[date]) {
             const title = allData[date].title;
-            delete allData[date];
-            saveData(allData);
+            await deleteEntryDB(date);
             resultMessage = `Deleted diary entry "${title}" for ${date}.`;
           } else {
             resultMessage = `No diary entry found to delete for ${date}.`;
           }
 
         } else if (action === 'export_data') {
-          resultMessage = `Here is your raw diary data for backup (copy and save this JSON):\n\n${JSON.stringify(allData, null, 2)}`;
+          const rawData = await exportAllEntries();
+          resultMessage = `Here is your raw diary data for backup (copy and save this JSON):\n\n${rawData}`;
 
         } else if (action === 'wipe_data') {
-          localStorage.removeItem(STORAGE_KEY);
+          await clearAllEntries();
           resultMessage = "All your diary entries have been deleted. Your journal is now empty.";
 
         } else {
